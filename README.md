@@ -181,14 +181,24 @@ These are designed as placeholders showing "Feature in Development" to demonstra
 
 ## 🔒 Environment Variables
 
-The application uses the following environment variables (already configured in `.env`):
+The application requires several environment variables to run. See `.env.example` for a complete list.
 
-```
-JWT_SECRET=<your-secret-key>
-ADMIN_PASSWORD=<admin-password>
-```
+**Critical variables:**
+- `DATABASE_URL` - PostgreSQL connection string
+- `JWT_SECRET` - Secret key for JWT tokens (must be strong in production)
+- `NODE_ENV` - `development` or `production`
+- `RESEND_API_KEY` - For email functionality
+- `FROM_EMAIL` - Sender email address
+- MinIO credentials for file storage
 
-**Note:** The current values are suitable for development. For production, these should be changed to secure values.
+**⚠️ For Production Deployment:**
+1. Copy `.env.example` to `.env`
+2. Set all required variables with secure values
+3. **Never use default values in production**
+4. See `docs/DEPLOYMENT.md` for complete deployment guide
+5. See `docs/DEPLOYMENT_CHECKLIST.md` for deployment checklist
+
+**Note:** The database URL was previously hardcoded in `schema.prisma` (security risk). This has been fixed to use the `DATABASE_URL` environment variable.
 
 ## 🎭 Role Permissions
 
@@ -227,6 +237,46 @@ ADMIN_PASSWORD=<admin-password>
 - Calendar integration with external services
 - Advanced reporting with charts and analytics
 - Mobile app for on-set access
+
+## 🚢 Deployment
+
+### Quick Start
+The application is ready for deployment! See `docs/DEPLOYMENT.md` for comprehensive instructions.
+
+### Build & Deploy
+```bash
+# Install dependencies
+pnpm install --frozen-lockfile
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your production values
+
+# Run database migrations
+pnpm db:migrate
+
+# Build for production
+pnpm build
+
+# Start production server
+pnpm start
+```
+
+### Recent Deployment Fixes (✅ Ready for Production)
+- ✅ Fixed hardcoded database credentials (security issue)
+- ✅ Added environment variable configuration
+- ✅ Fixed build process to complete successfully
+- ✅ Created comprehensive deployment documentation
+- ✅ Added production security warnings
+
+**Known Issues (Non-Blocking):**
+- TypeScript compilation warnings (don't affect runtime)
+- ESLint code quality warnings (gradual improvement)
+
+For detailed deployment information, see:
+- `docs/DEPLOYMENT.md` - Complete deployment guide
+- `docs/DEPLOYMENT_CHECKLIST.md` - Pre-deployment checklist
+- `.env.example` - All required environment variables
 
 ---
 

@@ -6,7 +6,17 @@ import { authenticateUser, checkPermission } from "~/server/utils/auth";
 import { Resend } from "resend";
 import { env } from "~/server/env";
 
-const resend = new Resend(env.RESEND_API_KEY);
+// Initialize Resend lazily only when needed
+let resend: Resend | null = null;
+function getResendClient(): Resend {
+  if (!resend) {
+    if (!env.RESEND_API_KEY || env.RESEND_API_KEY === "") {
+      throw new Error("RESEND_API_KEY is not configured. Email functionality is not available.");
+    }
+    resend = new Resend(env.RESEND_API_KEY);
+  }
+  return resend;
+}
 
 export const createAnnouncement = baseProcedure
   .input(
@@ -150,7 +160,8 @@ export const createAnnouncement = baseProcedure
                              input.type === "schedule_change" ? "Schedule Change" :
                              "Announcement";
 
-            await resend.emails.send({
+            const client = getResendClient();
+        await client.emails.send({
               from: env.FROM_EMAIL,
               to: recipient.email,
               subject: `${priorityBadge ? priorityBadge + " - " : ""}${input.subject}`,

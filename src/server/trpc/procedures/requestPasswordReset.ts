@@ -6,7 +6,17 @@ import { db } from "~/server/db";
 import { baseProcedure } from "~/server/trpc/main";
 import { env } from "~/server/env";
 
-const resend = new Resend(env.RESEND_API_KEY);
+// Initialize Resend lazily only when needed
+let resend: Resend | null = null;
+function getResendClient(): Resend {
+  if (!resend) {
+    if (!env.RESEND_API_KEY || env.RESEND_API_KEY === "") {
+      throw new Error("RESEND_API_KEY is not configured. Email functionality is not available.");
+    }
+    resend = new Resend(env.RESEND_API_KEY);
+  }
+  return resend;
+}
 
 export const requestPasswordReset = baseProcedure
   .input(
@@ -52,7 +62,8 @@ export const requestPasswordReset = baseProcedure
     // Send email with reset link
     if (user.receiveEmailNotifications) {
       try {
-        await resend.emails.send({
+        const client = getResendClient();
+        await client.emails.send({
           from: env.FROM_EMAIL,
           to: user.email,
           subject: "Reset Your Password 🔑",
