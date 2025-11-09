@@ -2,7 +2,17 @@ import { Resend } from "resend";
 import { env } from "~/server/env";
 import type { ReportRecipient } from "./getReportRecipients";
 
-const resend = new Resend(env.RESEND_API_KEY);
+// Initialize Resend lazily only when needed, and only if API key is provided
+let resend: Resend | null = null;
+function getResendClient(): Resend {
+  if (!resend) {
+    if (!env.RESEND_API_KEY || env.RESEND_API_KEY === "") {
+      throw new Error("RESEND_API_KEY is not configured. Email functionality is not available.");
+    }
+    resend = new Resend(env.RESEND_API_KEY);
+  }
+  return resend;
+}
 
 export interface ReportEmailData {
   showTitle: string;
@@ -272,9 +282,10 @@ export async function sendReportEmail(
   try {
     // Send individual emails to each recipient for better deliverability
     // and to avoid exposing recipient lists
+    const client = getResendClient();
     const emailPromises = recipients.map(async (recipient) => {
       try {
-        await resend.emails.send({
+        await client.emails.send({
           from: env.FROM_EMAIL,
           to: recipient.email,
           subject,
