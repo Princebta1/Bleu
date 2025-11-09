@@ -1,0 +1,16 @@
+import { z } from "zod";
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(["development", "production"]),
+  BASE_URL: z.string().optional(),
+  BASE_URL_OTHER_PORT: z.string().optional(),
+  ADMIN_PASSWORD: z.string(),
+  JWT_SECRET: z.string(),
+  RESEND_API_KEY: z.string(),
+  FROM_EMAIL: z.string().email(),
+  MINIO_ROOT_USER: z.string(),
+  MINIO_ROOT_PASSWORD: z.string(),
+  MINIO_BUCKET_NAME: z.string(),
+});
+
+export const env = envSchema.parse(process.env);
